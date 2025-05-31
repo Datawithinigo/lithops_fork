@@ -476,7 +476,8 @@ Processing data from the Cloud — Lithops  documentation
 
 # manri error 9 : error 1= cuando finalizan bien 
 lithops logs poll
-R
+
+
 comentar con manri: 
 ==== ENERGY MONITOR INITIALIZED FOR PROCESS 9 ====
 2025-05-13 18:08:43,341 [INFO] handler.py:224 -- Reading stats file before execution: /tmp/lithops-bigrobbin/storage/lithops.jobs/aaf05f-0-M000/00000/job_stats.txt
@@ -795,58 +796,9 @@ asi como generan :
 - examples/*/images/
 - examples/*/profiling/
 - examples/*/profiling/mocks
-- examples/*/models/
-
-
-
-
-
-
-
-
-
-
-
-
-
-# manri : 
-* 65 tdp --> worker? 
- dentro de los lambda
-  + diccionario :  
-
-prompt : 
-
-what i want is to store in the json file the following information: 
-from : 
-  "cpu_usage": [
-    {
-      "cpu_id": 0,
-      "cpu_percent": 4.0,
-      "timestamp": 1747414204.524089 
-To 
-  "cpu_usage": [
-    {
-      "cpu_id": 0,
-      "cpu_percent": 4.0,
-      "start_timestamp": 1747414204.524089 
-      "end_timestamp": 18147414204.524089 
-
-
-
-
-
-
-prompt: 
-
-I need help into architectural design, could you sumarize  all the files that are used from lithops since the execution. 
-i mean with a brief description 
-
-first one secuential sumary 
-
-general_test_map_reduce.py  > lithops/executors.py  >  ... > handler.py > energy_manager > energy monitor
-
-And then i want a bit of explanation of the project where you briefly explain wich desing pattern is being used and how critical is its performance in the thread workers
-
+- examples/*/models/	
+# conect to the server:
+ssh -L 21000:192.168.2.2:6443 iarriazu@cloudfunctions.urv.cat -N
 
 # PROMPT 2: 
 
@@ -918,3 +870,728 @@ Please provide:
 - Code examples for critical integration points
 
 Consider how your design will interact with Lithops' existing components, particularly the execution flow from executors.py through handler.py.
+
+# EBPF
+cpu-cycles or CPU_CYCLES:PACKAGE0: Number of CPU cycles executed. This is highly correlated with energy consumption.
+instructions or CPU_INSTRUCTIONS:PACKAGE0: Number of instructions retired. Provides a measure of work done.
+cache-misses (e.g., LLC_MISSES:PACKAGE0): Last-Level Cache misses often lead to more energy-intensive main memory accesses.
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# conexion remota: 
+sudo apt update
+sudo apt install -y openssh-client
+ssh-keygen -t rsa -b 4096 -C "inigo.arriazu@dataoverkill.com"
+
+
+/home/bigrobbin/.ssh/id_rsa
+
+
+The key fingerprint is:
+SHA256:gaHMVBV4W9hoAFXVsxjtHfhlcMINSc7S82LujPTn8S8 inigo.arriazu@dataoverkill.com
+
+
+The key's randomart image is:
++---[RSA 4096]----+
+|    o+==+*.o +==.|
+|   + ..o= + =++o+|
+|    + .o.o +.==+ |
+|        ... o.oo |
+|        S     o .|
+|             o . |
+|            . .. |
+|           . =E +|
+|            . ++=|
++----[SHA256]-----+
+ 
+
+
+
+ 
+
+conexion al rack 
+
+
+ssh <username>@cloudfunctions.urv.cat
+
+MI CASO : 
+
+Buenas. Acceso completado. Te dejo aquí la información necesaria:
+
+- username: iarriazu
+- password: password (cambiala con `passwd` ASAP) -> password44
+- manual de bienvenida al rack: (adjunto)
+
+Saludos,
+
+
+
+ssh iarriazu@cloudfunctions.urv.cat
+
+
+
+iarriazu@proxy1:~$ ./init_ssh.sh
+Bienvenido, , introduce tu contraseña de SSH: Generating public/private rsa key pair.
+Enter file in which to save the key (/home/users/iarriazu/.ssh/id_rsa): 
+/home/users/iarriazu/.ssh/id_rsa already exists.
+Overwrite (y/n)? y
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/users/iarriazu/.ssh/id_rsa
+Your public key has been saved in /home/users/iarriazu/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:iJf355qOEnZPwIKNnbFMZLy0aRbYwCUEcyjPmrFNyco iarriazu@proxy1
+The key's randomart image is:
++---[RSA 3072]----+
+|  o==B+          |
+|. .oooB          |
+| = . O X         |
+|. * o.&oo        |
+|.O  .o+.S.       |
+|=E.  .o....      |
+|     . o o. .    |
+|      .  ..+     |
+|       ...+..    |
++----[SHA256]-----+
+ 
+
+*** System restart required ***
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+ssh <usuario>@cloudfunctions.urv.cat
+
+
+
+Test si funciona:
+# kubernetes  
+kubectl get nodes
+
+# docker 
+docker run hello-world
+
+ssh -N -L 44444:storage4-10Gbit:9001 <usuario>@cloudfunctions.urv.cat 
+
+
+ssh -N -L 44444:storage4-10Gbit:9001 iarriazu@cloudfunctions.urv.cat
+
+
+
+
+
+
+ssh -A \
+    -J iarriazu@cloudfunctions.urv.cat \
+    -N -L 44444:storage4-10Gbit:9001 \
+    iarriazu@proxy1
+
+
+
+
+
+in ssH : 
+cd flexecutor-main && source venv-flexecutor/bin/activate && cd ../lithops_fork && pip install -e 
+
+cd flexecutor-main && source venv-flexecutor/bin/activate && python examples/general_usage/main_german.py
+
+cd flexecutor-main && source venv-flexecutor/bin/activate && python examples/ml/main.py
+
+
+
+# elements: 
+- __Complete the SSH Setup__:
+
+  - Answer "y" to copy your SSH key to the cluster (this will make future connections easier)
+  - The script will test the SSH connection and provide instructions for connecting with VSCode
+
+- __Connect to proxy1 with VSCode__:
+
+  - Open VSCode
+  - Press F1 or Ctrl+Shift+P to open the Command Palette
+  - Type "Remote-SSH: Connect to Host..." and select it
+  - Select "cloudfunctions.urv.cat" from the list
+  - VSCode will connect to proxy1 and open a new window
+
+
+
+cd flexecutor-main && source venv-flexecutor/bin/activate && cd ../lithops_fork && pip install -e .
+
+
+
+pip install flexecutor + pip install lithops 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Buenas Íñigo,
+
+Vamos a comenzar como te comenté a lanzar en un entorno distribuido, ver que todo el sistema de monitorización de energía funcione ok y ya obtener resultados, pero sin todavía meternos en nada de modelos ni optimización. 
+
+Para ello, te voy a dar acceso a nuestro k8s cluster + minio object storage. Con minor modifications podrán lanzar tu código en este entorno del mismo modo que en local.
+
+Lista de tareas entonces a realizar:
+       0. Mándame una public key para acceder via ssh a nuestro cluster. Cuando lo hagas, te mando instrucciones de como acceder y un doc con explicaciones del entorno.
+Preparar el setup de ejecución:
+El cluster completo de k8s está formado por compute{2-7}: esto es un problema porque cada una tiene hardware diferente. Entonces, las máquinas que usaremos serán compute6 y compute7. Cada uno de los servers tienen 2 x https://ibertronica.es/amd-epyc-7502-335ghz-socket-sp3-bulk. TDP = 180W.
+Para ello, tendrás que modificar la lógica de control de lithops con k8s. No es muy chungo (te dejo pistas):
+Definir nodeSelector en la config de los pods: https://github.com/lithops-cloud/lithops/blob/883618c60e8297e9feba346ef55e9dff0ae510a1/lithops/serverless/backends/k8s/config.py#L119.
+Etiquetar los nodos para que nodeSelector solo use compute{6,7}.
+Conectar lithops/flexecutor al cluster.
+Build de runtimes docker para k8s (lithops runtime build ...)
+Apuntar la config de lithops al cluster
+Lanzar los pipelines sobre el cluster. Puedes cambiar la escala, crear algún pipeline propio que sea algo intensivo, para ver las diff. de energía según configuraciones. DagExecutor.profile()
+Comprobar los resultados de energía (en k8s solamente podrás usar el método del TDP): ver que tengan sentido.
+***Quizá sea necesario iterar los puntos 3 y 4 varias veces, hasta obtener resultados esperados. 
+
+El output de esto serán unos profilings de calidad, que nos darán:
+Métricas para plotear en el TFG.
+Input para el futuro training/optimizing. 
+
+Saludos, (recuerda mandarme la PK) y buen finde,
+
+
+
+
+
+
+
+
+conexion SSH : 
+VScode 
+conection to host 
+
+
+Adapta lithops fork para: Lista de tareas entonces a realizar quiero : ejecutar 
+
+/home/users/iarriazu/lithops/main_german.py
+
+en el cluster y para ello hay que Preparar el setup de ejecución:
+
+1) El cluster completo de k8s está formado por compute{2-7}: esto es un problema porque cada una tiene hardware diferente. Entonces, las máquinas que usaremos serán compute6 y compute7. Cada uno de los servers tienen 2 x https://ibertronica.es/amd-epyc-7502-335ghz-socket-sp3-bulk. TDP = 180W.
+Para ello, tendrás que modificar la lógica de control de lithops con k8s. No es muy chungo (te dejo pistas):
+- Definir nodeSelector en la config de los pods: https://github.com/lithops-cloud/lithops/blob/883618c60e8297e9feba346ef55e9dff0ae510a1/lithops/serverless/backends/k8s/config.py#L119.
+- Etiquetar los nodos para que nodeSelector solo use compute{6,7}.
+
+2) Conectar lithops/flexecutor al cluster.
+Build de runtimes docker para k8s (lithops runtime build ...)
+Apuntar la config de lithops al cluster
+
+
+
+
+y si hacemos la version mas basica? 
+lithops logs poll
+
+1) lithops base 
+2) lithosp handler
+3) lithosp energia 
+4) flexecutor ... 
+
+
+
+
+# Lithops with Kubernetes in the Cluster: Setup Complete
+
+I've created a comprehensive set of scripts and documentation to help you run Lithops in the Kubernetes cluster using VSCode's SSH integration. Here's a summary of what we've done and the next steps:
+
+## What We've Done
+
+1. __Created Configuration Files__:
+
+   - Updated the Lithops configuration to work with Kubernetes and MinIO
+   - Set up SSH configuration for connecting to the cluster
+
+2. __Created Setup Scripts__:
+
+   - `setup_vscode_ssh.sh`: Sets up VSCode SSH configuration for connecting to the cluster
+   - `setup_lithops_config_on_proxy1.py`: Sets up Lithops on proxy1 after connecting with VSCode SSH
+   - Additional scripts for alternative approaches
+
+3. __Created Documentation__:
+
+   - `VSCODE_SSH_CLUSTER_GUIDE.md`: Comprehensive guide for using VSCode with SSH to develop and run Lithops in the cluster
+
+## Next Steps
+
+You've already started the setup process by running `./setup_vscode_ssh.sh iarriazu`. Here's how to complete the setup:
+
+1. __Complete the SSH Setup__:
+
+   - Answer "y" to copy your SSH key to the cluster (this will make future connections easier)
+   - The script will test the SSH connection and provide instructions for connecting with VSCode
+
+2. __Connect to proxy1 with VSCode__:
+
+   - Open VSCode
+   - Press F1 or Ctrl+Shift+P to open the Command Palette
+   - Type "Remote-SSH: Connect to Host..." and select it
+   - Select "cloudfunctions.urv.cat" from the list
+   - VSCode will connect to proxy1 and open a new window
+
+3. __Set up Lithops on proxy1__:
+
+   - Once connected to proxy1 with VSCode, open a terminal
+   - Copy the `setup_lithops_config_on_proxy1.py` script to proxy1 or create it directly in VSCode
+   - Run the script: `python3 setup_lithops_config_on_proxy1.py`
+
+4. __Run the Test Script__:
+
+   - After the setup script completes, run the test script: `python3 ~/test_lithops.py`
+   - This will verify that Lithops is working correctly with Kubernetes and MinIO
+
+5. __Develop Your Lithops Applications__:
+
+   - Create a new project directory: `mkdir -p ~/lithops_project`
+   - Open this directory in VSCode
+   - Create and edit your Lithops applications directly on proxy1
+   - Run your applications with the integrated terminal
+
+## Key Benefits of This Approach
+
+1. __Direct Access to Kubernetes__: The proxy1 node already has kubeconfig configured, so you don't need to set up Kubernetes access
+2. __Integrated Development__: Use VSCode's full features (syntax highlighting, code completion, debugging) while working directly on the cluster
+3. __No Code Copying__: Edit and run code directly on the cluster without copying files back and forth
+4. __Seamless Experience__: Develop, test, and debug in the same environment
+
+
+
+
+
+
+
+
+
+
+
+# LITHOPS 
+# install lithops backend: 
+
+docker pull lithopscloud/ibmcf-python-v312
+
+
+ 
+
+## Entorno virtual
+ 
+python3 -m venv lithops-venv
+source lithops-venv/bin/activate 
+pip install -e ".[all]" 
+
+export LITHOPS_CONFIG_FILE=/home/users/iarriazu/lithops/lithops_config
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2. cp esto en ~/.kube/config
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURCVENDQWUyZ0F3SUJBZ0lJVE0xQ0dTZzlPM0F3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TXpFd01qZ3hNVEU0TVRsYUZ3MHpNekV3TWpVeE1USXpNVGxhTUJVeApFekFSQmdOVkJBTVRDbXQxWW1WeWJtVjBaWE13Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLCkFvSUJBUUNoVnFZd0haamVGcVlydVFiN2l4bFF2Mi9lQitjZVcvZjVxdjQ3b1R3YU1jUmI4NkJlMzh6SHJLTHAKWmprSXk3TFZUVkhuN2JYanFTcUpTSmtuTVQvaEZBRjhjWnhLeEpQa21pWDdKenZmc0hDV2wrcUQ5cC9UbDM4MApTeURlUmFZUTFYMFNWb0x2dUVzUERtbGFMWTFvdkxDUGlQcmE4Q0pYOVFuc0pVSUgwTFhaZkZOYmJpaytyMzllCkh4QWN0aXJESk9HcnhmVkFFd3UxV0hEVTdmb3ZRNlFZQnQ0aUlmZ0ZzWFRLU2xPRzRSN0N0eFhhRzBGWU5DUFgKNEtWR1hjb01UYTkwWTRCLzFxZndSZU1kM3lpWG9leEFiNHo4UHlzaDlaSGRTN09mSTNmSnd4M2ZxY3k0ZTJPbApZNnpiSy9JUnVKK3VrejZlWlkxMGViZjBqbm43QWdNQkFBR2pXVEJYTUE0R0ExVWREd0VCL3dRRUF3SUNwREFQCkJnTlZIUk1CQWY4RUJUQURBUUgvTUIwR0ExVWREZ1FXQkJRNTJFWE5hQ1JNdkd4V1h0L0FERmV6am1zYWZ6QVYKQmdOVkhSRUVEakFNZ2dwcmRXSmxjbTVsZEdWek1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQnZFbUZQYzZJVQpOTnR6bmcwVG5pbVNmbllLY0psS2cxL3JJZWg0UWErWXB0aWpJNEZueUpESGhSSDJCN0VzblQzNTdEckdNdkFJCkNZcm4zTEFZZHlBOVNPNG5HNjArT09taytXbDFwVmozVFRpZDcrSTRvcUVncGFkU2d5Rk5ZU25IcUFnbGVVQmYKN0dkQjlJNUFXQXVENzV4eGlxcjFRQ2VYYUpIT2x5MFc5OVhTUWJKdm9tMjdrdXBBVE40MnVHdzRqZjIvOWc0egpzM0RxdWkvZHpSVUxLN2d5b21IWlRFSmVGdFB1VmJVQWF5K0VEUHJTQ1dVZHRlcDIzNlBIdWNtcDlGT09BcUN4ClNCUWpuSTdraDNoQ3JSeXFQRnhabEVKbll6QjNiV3F0eDY1bWFQRHVKSGFKZFpWdVRtdEN0TEpxWWVyaVhQQzIKekdZQWpYUnl4US9oCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    server: https://proxy1:21000
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+current-context: ""
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lJZXRGMzRWa01lNWd3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TXpFd01qZ3hNVEU0TVRsYUZ3MHlOVEV3TWpneE1EQTVNVGhhTURReApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1Sa3dGd1lEVlFRREV4QnJkV0psY201bGRHVnpMV0ZrCmJXbHVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXljT0tXYUZOS0F0M0VrcGYKZlFSQ1dsNFlQN2hmWjFIYXRaZ3lrRU8vNUgvbVZucHpweUhuOFp0M0hUeXZiZDJMcDhnK1VoMEN3SSsxWUtobQpNeVVHNjJrWWhWNStsb1NqODNHOCtWQ3BRZ3pSRUkwaDhqY1NzRC9laDg1ckV6bnpURDU5WTk3QjhDSDYxRFlCCmhTdjdaMDV1UGJSWmptOTVaeDdtTDhjVmRZMUpqM0NuVE84UUU5cXhtbmdWTFl5U2FjMGtyUlNxYWRNQWUvaE4KdlVWR05PWmdXeDJYVjJ0S252MmdmUk5PYWNCd09VTEEyUWtkbnB0NmxZT1NaVWE2ekt4RFV2VTE2T3lnT3dQYgo1dldpcGpxWkRIaUVud05abUxTYktkVXg3RW50Y20vWFVSUDB4N0VrdWpWR1RSZjZTM3ZzRW5JakNDUVhTN0M5CnlNRDAzd0lEQVFBQm8xWXdWREFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUgKQXdJd0RBWURWUjBUQVFIL0JBSXdBREFmQmdOVkhTTUVHREFXZ0JRNTJFWE5hQ1JNdkd4V1h0L0FERmV6am1zYQpmekFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBa2VpN1c3bVdyYXN3MmhHNlRSU2JNMU1SaHR0WHVwWlF4QzV0CjdQc3JRRDJ2N0Z0OVR1RW9MZ2F4UGlNanhBT0FhUWFHdGxvaXZoRUxVWGhlc0x2eTJJaWE1Y2pRa2E4NmxjY3YKVVBqQXNQOVhOQ2sxcHhjeitCaHJFbWN4d1JMT0tGNVZ6WWlVcXRWdUZCbEFiemxDRmNWZ0U0N2Eya3FrbUd2cwpkQlZORm9ZaFRPam9yK29Vb3dKRjZhbkIxY3pSTVpRY1ZpKy9GclBJUktYVTJLdXVYYjd5cnI5ZmpYcjhQVjcvClRKWHVRNWx1K1ljWXFmODduSG93SnZaNnZZTkV5aWRPMHhjanNMQ3NFc2FoaHhoSFRmRGJ1aTVtUUNTclpQUUEKZXF4YWxrQVYwQmlkT2xOUHNzN1VzUGVvOGdmNEdyNTJsR1kzQ2VvQnJoY3U4T2R0RUE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBeWNPS1dhRk5LQXQzRWtwZmZRUkNXbDRZUDdoZloxSGF0Wmd5a0VPLzVIL21WbnB6CnB5SG44WnQzSFR5dmJkMkxwOGcrVWgwQ3dJKzFZS2htTXlVRzYya1loVjUrbG9TajgzRzgrVkNwUWd6UkVJMGgKOGpjU3NEL2VoODVyRXpuelRENTlZOTdCOENINjFEWUJoU3Y3WjA1dVBiUlpqbTk1Wng3bUw4Y1ZkWTFKajNDbgpUTzhRRTlxeG1uZ1ZMWXlTYWMwa3JSU3FhZE1BZS9oTnZVVkdOT1pnV3gyWFYydEtudjJnZlJOT2FjQndPVUxBCjJRa2RucHQ2bFlPU1pVYTZ6S3hEVXZVMTZPeWdPd1BiNXZXaXBqcVpESGlFbndOWm1MU2JLZFV4N0VudGNtL1gKVVJQMHg3RWt1alZHVFJmNlMzdnNFbklqQ0NRWFM3Qzl5TUQwM3dJREFRQUJBb0lCQUdHYXp0cjlSUzRTSGRBagpXbjVJQ1RGZVE2elBySmQyNmE3ZnFkWlFjQXhDTTFPeWVUQnBIcU9xNmJ5akZ0cTNTbEFvZHIyU2V6cGNTd292CmJRRmc4REFCNzNMVmU3ZWxBd3RLQW5rNXBDZm51MXVlYXNXYUR0aGtqV3AxV1NjNzZZOEF5L2Y4VXlXdnluL08KZ0gzRUFTTEF0bVB6VXorc2ZiWjlKQzRJeVVETDlLN2ZwYko4ejk3QmtoTW1UWEYzRFFtWjFDTUtGcUN1WTZ3Zwo0RnV6WlVNaUYyRlFDZ2JSOWxTT2lqYnB2ZmNrZmNpRXVTMng2d0FCZ2U2a0hwQjB1c2RMSWIzWVpnclBkaE5KCjFvRXVIZlV1UWdaVnY5ek93K1JicUUzYys5bjJrNUFkNDRDbzd4eUVDTG9WNVhlVUJHVDFsdWorb0p5L1l2S3kKNFJYbU9vRUNnWUVBMmlUZTE4bVRBUHlKZFZvS21RMncyM3piYVl0N2hFRDl3ZmpkM2tkOUttaDdsald2WEtITgp4V2tTQWpnL0p6bmg0amdweHRPNjdwaXViLzhsVE9SOG9zTjdrUFlJcEpOQVdEMXZydDgzWjZFMnJhOFdsV2c0CjFwNFNFaGRLcXoyNWZZZUhHcW55djVDcVFFejNpZmVwVGJFLzZNRmViNko2bFZQNzdXVWcwc2NDZ1lFQTdNYjUKUWtrakVKelVLdmRNMjdzTXdaUXlTRHpPNFhoUDRUYUV1Z2lFVm9lUHVCaVVrc1BiOGMrZmlFTDg4SGM2MHlYVgpWRTc4ZGxMQ3R0NG0zby94ZU9aVERlUEpWS2JUMzFJQ0s4ZE5VaTc0TzlEekNQZkJSTDhVWWh1YlRyKzZRSEx3CmxxNWt0dEYwUnpZbWpIekNubktld0ZjclJCRjkxNXRwK3NKRU5Ta0NnWUExd01JY29ESVdHeVJ3QTFqN0wvRjEKbEVXb3MxTWpXclJzMkxzcks2aC9DN0h3YUpnbWxrUlRNYm5iVENyYnFwcXJtTFZLcGgrNDdXeUdjbk9waDkvaQpaNU1LUEdZU3o2b2FWRUV4OFJVQTl5dTNEcDdkQUFxSmIvZjU5ejFTQnVxdk1QY3NyZFlBT0ZDTGVhdkJsb0prCmY1bkU2K2t1VHZZdjE3c0xXMUVFUHdLQmdRRGVLckMxRHBUMVFJSWZzcDJPUzB0ajA1NytndmdIUFhHT095NTgKdEFNZ2dlQkxkOXpvZlJoQ0kzTm9VcHF0TXVLaVBveVZwK3RoUnJSbkM3bGkrYU0wc3NEWmRwTnhkM3V6dm1wRgpFNk9zYW1BSEdEOENlaDRCV0YxUzFONThISkF4YXVmdUtzSmJlOXJqK3A1ZkVhMDNLUXRtSkNSM29RWDRLVjVlCnFLdUJTUUtCZ1FEU1BqQlFqQjdFTVcxamVQMU9TWjdmYlVmKzhlamp6YkJqQ1ZhVDEyOXB1NjVNK0pUMkdkL0UKSHVLUmVsclViU1J0aUtkTm9IYWxZNnZSVUFTeXBXSzFpMkUxWFJtVlg1Q21iK2xjbTd0VGROSGdKOGFGcWFUZQpWNmRzN3Y2U0xsVGN0eFNaS2JuRUxvQ0wvUVh1ditqT0pZTVN1NzBybUdabFNOZ20xQVhkZFE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+
+3. Añade esta linea a /etc/hosts: 127.0.0.1       proxy1
+
+4. Creat tunel SSH:  ssh -L 21000:192.168.2.2:6443 iarriazu@cloudfunctions.urv.cat -N
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export LITHOPS_CONFIG_FILE=/home/users/iarriazu/lithops_fork/lithops_config
+	
+# conect to the server:
+ssh -L 21000:192.168.2.2:6443 iarriazu@cloudfunctions.urv.cat -N
+
+
+
+1. Etiquetar los nodos compute6 y compute7:
+
+# Etiquetar los nodos para identificarlos
+kubectl label nodes compute6 node-type=compute-high-performance
+kubectl label nodes compute7 node-type=compute-high-performance
+
+# Verificar las etiquetas
+kubectl get nodes --show-labels | grep compute
+
+
+# Ver las etiquetas de los nodos compute
+kubectl get nodes --show-labels | grep compute
+
+# Ver específicamente compute6 y compute7
+kubectl describe node compute6 | grep Labels
+kubectl describe node compute7 | grep Labels
+
+3. 
+# Crear namespace para lithops
+kubectl create namespace lithops
+
+# Verificar que el namespace se creó
+kubectl get namespaces | grep lithops
+
+
+5. 
+
+# Construir el runtime para k8s
+lithops runtime build -b k8s
+
+# Listar los runtimes disponibles
+lithops runtime list -b k8s
+
+
+
+# crear dockerfile: 
+lithops/Dockerfile
+
+# Crear un Dockerfile básico para lithops
+cat > Dockerfile << 'EOF'
+FROM python:3.10-slim
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar lithops
+RUN pip install lithops
+
+# Configurar el directorio de trabajo
+WORKDIR /lithops
+
+# Copiar el handler de lithops
+COPY lithops_k8s.zip /opt/lithops/
+
+# Comando por defecto
+CMD ["python"]
+EOF
+
+# Ahora construir el runtime
+lithops runtime build -b k8s lithops-k8s-runtime
+
+# ¡Perfecto! La imagen se construyó correctamente, pero el error es que está intentando hacer push a Docker Hub sin autenticación. Para usar lithops con k8s en un cluster local, no necesitas hacer push a un registry externo. Necesitas actualizar tu configuración para usar un registry local o evitar el push.
+
+docker images | grep lithops-k8s-runtime
+
+
+pip install pytest
+lithops test -b k8s
+
+
+
+Tengo estas instrucciones para correr lithops en el cluster, mi pregunta es, cual debe de ser el archivo de configuracion en base a el build runtime de docker (https://github.com/lithops-cloud/lithops/blob/master/config/config_template.yaml ) INSTRUCCIONES: Preparar el setup de ejecución: El cluster completo de k8s está formado por compute{2-7}: esto es un problema porque cada una tiene hardware diferente. Entonces, las máquinas que usaremos serán compute6 y compute7. Cada uno de los servers tienen 2 x https://ibertronica.es/amd-epyc-7502-335ghz-socket-sp3-bulk. TDP = 180W. Para ello, tendrás que modificar la lógica de control de lithops con k8s. No es muy chungo (te dejo pistas): 1. Definir nodeSelector en la config de los pods: https://github.com/lithops-cloud/lithops/blob/883618c60e8297e9feba346ef55e9dff0ae510a1/lithops/serverless/backends/k8s/config.py#L119. 2. Etiquetar los nodos para que nodeSelector solo use compute{6,7}. 1. Conectar lithops/flexecutor al cluster. 1. Build de runtimes docker para k8s (lithops runtime build ...) 2. Apuntar la config de lithops al cluster tengo actualmente una configuracion similar a esta lithops:     backend: k8s     storage: minio  k8s:     kubecfg_path: /home/users/iarriazu/.kube/config     worker_processes: 4     docker_user: iarriazu     runtime: macarronesc0lithops/lithops-kubernetes-default-v38:3.6.0     docker_server: docker.io     runtime_cpu: 1     runtime_memory: 2048     runtime_timeout: 600     standalone: true     node_selector:         compute-node: high-performance  minio:     storage_bucket: test-bucket     endpoint: http://storage4-10Gbit:9000     access_key_id: lab144     secret_access_key: astl1a4b4
+
+
+
+
+
+
+
+# DOCKER cluster: 
+
+# subir al docker la imagen correcta:  --> FUNCIONA
+lithops runtime build -b k8s iarriazu/inigo_runtime
+
+
+
+# Si tu Dockerfile se llama Dockerfile.lithops (o similar):
+lithops runtime build -f Dockerfile.lithops -b k8s iarriazu/inigo_runtime
+
+# Si tu Dockerfile se llama simplemente Dockerfile:
+lithops runtime build -b k8s iarriazu/inigo_runtime
+
+# namespace (si aún no lo has creado):
+kubectl create namespace lithops-jobs
+
+
+
+
+
+
+
+
+ 
+ 
+# extraer los logs 
+
+## Tras error pull image ver el pod: 
+kubectl describe pod <nombre-del-NUEVO-pod-meta> -n lithops-jobs
+
+## cuando no da tiempo: 
+kubectl get events -n lithops-jobs --sort-by='.metadata.creationTimestamp'
+
+# ver la ejecucion: 
+kubectl get pods -n lithops-jobs -w
+kubectl describe pod lithops-worker-361dev0-77d9c221a5-meta-5zft4 -n lithops-jobs
+
+
+
+
+
+
+
+
+
+kubectl get jobs -n lithops-jobs
+
+ 
+kubectl logs -f job/<nombre-del-nuevo-job> -n lithops-jobs --all-containers
+
+
+kubectl logs -f job/lithops-worker-361dev0-c5d206f475-meta -n lithops-jobs --all-containers
+
+
+lithops runtime build -f Dockerfile -b k8s iarriazu/inigo_runtime
+
+
+# PODS de kubernetes data inbound --> direccion de ip 
+
+
+funcion de metadata para conectar datos con clientes 
+https://k8slens.dev/
+
+
+# eliminar todos los eventos a la vez 
+kubectl delete events --all --namespace lithops-jobs
+
+
+# coger algun ultimo log: 
+POD_NAME=$(kubectl get pods --namespace lithops-jobs --sort-by='.metadata.creationTimestamp' -o jsonpath='{.items[-1:].metadata.name}') && echo "Intentando obtener logs para el pod más reciente: $POD_NAME" && kubectl logs --namespace lithops-jobs $POD_NAME
+
+
+
+ 
+
+## elemenst
+mc alias set myminio http://192.168.5.24:9000 lab144 astl1a4b4
+mc ls myminio
+
+
+
+
+ 
+
+# conect to the server: 
+ssh -L 21000:192.168.2.2:6443 iarriazu@cloudfunctions.urv.cat -N
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# TRABAJO CLUSTER: 
+
+# Activate: 
+source lithops-venv/bin/activate 
+source .venv/bin/activate
+
+# Verificar: 
+lithops logs poll
+
+
+# conect to the server: 
+ssh -L 21000:192.168.2.2:6443 iarriazu@cloudfunctions.urv.cat -N
+  
+# general  # Export values  --> ERROR futuro runtime 
+export LITHOPS_CONFIG_FILE=/home/users/iarriazu/lithops/lithops_config
+
+export LITHOPS_CONFIG_FILE=/home/users/iarriazu/lithops_fork/lithops_config
+export LITHOPS_CONFIG_FILE=/home/users/iarriazu/lithops/lithops_config
+
+
+cd ~/lithops
+python3 -m venv .venv
+source .venv/bin/activate
+
+
+pip install --upgrade pip
+pip install -e .
+pip install kubernetes pyyaml
+
+
+docker start minio
+
+
+
+ 
+
+
+# ANTES DE EJECUTAR: 
+1) crear namespace: 
+kubectl create namespace inigo-jobs-energy
+
+2) docker login
+
+
+3) construir la runtimebuild: 
+
+lithops runtime build -b k8s iarriazu/inigo_runtime
+
+docker push iarriazu/inigo_runtime
+
+4) kubectl get nodes --show-labels
+5) kubectl auth can-i create pods --namespace=default 
+
+rename the nodes: 
+kubectl label nodes compute6 node-type=highcpu --overwrite
+kubectl label nodes compute7 node-type=highcpu --overwrite
+
+
+kubectl get nodes --show-labels
+
+lithops runtime build k8s --name inigo_runtime --dockerfile Dockerfile
+
+
+
+
+# Verificar acceso a los nodos correctos:
+kubectl get nodes -l node-type=highcpu,lithops-node=true
+
+# Gemini 
+kubectl label nodes compute6 lithops-target-node=true --overwrite
+kubectl label nodes compute7 lithops-target-node=true --overwrite
+
+
+kubectl get nodes --show-labels
+# O para un nodo específico:
+kubectl get node compute6 --show-labels
+kubectl get node compute7 --show-labels
+
+
+
+# Si tienes un requirements.txt en el directorio actual:
+lithops runtime build -b k8s mi-runtime-lithops-k8s
+
+# Si necesitas un Dockerfile específico (p.ej., Dockerfile.lithops):
+# lithops runtime build -b k8s -f Dockerfile.lithops mi-runtime-lithops-k8s
+lithops runtime build -b k8s inigo_runtime
+
+
+
+crear una cuenta de docker donde subir tus imagenes 
+
+
+iarriazu
+password44
+
+# Desde el directorio donde está tu Dockerfile
+lithops runtime build -b k8s iarriazu/inigo_runtime:latest
+
+docker push iarriazu/inigo_runtime:latest
+
+# eliminar todos los eventos a la vez 
+kubectl delete events --all --namespace lithops-jobs
+
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+TESTEAMos
+# Primero, lista los pods en tu namespace 'lithops-jobs' para encontrar los relevantes
+kubectl get pods -n lithops-jobs
+
+# Luego, obtén los logs de un pod específico (reemplaza <nombre-del-pod> con el nombre real)
+kubectl logs <nombre-del-pod> -n lithops-jobs
+
+# Si el pod tiene múltiples contenedores (aunque para Lithops suele ser uno principal), puedes especificar el contenedor:
+# kubectl logs <nombre-del-pod> -c <nombre-del-contenedor> -n lithops-jobs
+
+
+
+
+# prompt : 
+Adapta lithops fork para: Lista de tareas entonces a realizar quiero : ejecutar 
+
+/home/users/iarriazu/lithops/main_german.py
+
+en el cluster y para ello hay que Preparar el setup de ejecución:
+
+
+1) El cluster completo de k8s está formado por compute{2-7}: esto es un problema porque cada una tiene hardware diferente. Entonces, las máquinas que usaremos serán compute6 y compute7. Cada uno de los servers tienen 2 x https://ibertronica.es/amd-epyc-7502-335ghz-socket-sp3-bulk. TDP = 180W.
+
+Para ello, tendrás que modificar la lógica de control de lithops con k8s. No es muy chungo (te dejo pistas):
+
+- Definir nodeSelector en la config de los pods: https://github.com/lithops-cloud/lithops/blob/883618c60e8297e9feba346ef55e9dff0ae510a1/lithops/serverless/backends/k8s/config.py#L119.
+
+- Etiquetar los nodos para que nodeSelector solo use compute{6,7}.
+
+
+
+2) Conectar lithops/flexecutor al cluster.
+
+Build de runtimes docker para k8s (lithops runtime build ...)
+
+Apuntar la config de lithops al cluster
+
+
+
+kubectl get events -n inigo-jobs-energy --sort-by='.metadata.creationTimestamp'
+
+
+
+
+
+
+
