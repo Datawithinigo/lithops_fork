@@ -85,6 +85,10 @@ spec:
   template:
     spec:
       restartPolicy: Never
+      nodeSelector:
+        lithops-node: "true"
+      securityContext:
+        privileged: true
       containers:
         - name: "lithops"
           image: "<INPUT>"
@@ -122,6 +126,17 @@ kind: Pod
 metadata:
   name: lithops-worker
 spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: compute-node
+                operator: In
+                values:
+                  - worker
+  securityContext:
+    privileged: true
   containers:
     - name: "lithops-worker"
       image: "<INPUT>"
@@ -132,8 +147,8 @@ spec:
         - "--"
       resources:
         requests:
-          cpu: '1'
-          memory: '512Mi'
+          cpu: "1"
+          memory: "512Mi"
 """
 
 

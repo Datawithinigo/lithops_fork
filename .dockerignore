@@ -1,0 +1,21 @@
+# Minimal .dockerignore - only exclude what's absolutely necessary
+
+# Git
+.git/
+
+# Virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

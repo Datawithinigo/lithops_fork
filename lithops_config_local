@@ -1,0 +1,32 @@
+lithops:
+    backend: localhost
+    storage: minio
+ 
+ 
+
+# localhost:
+ 
+#     # runtime: ml-runtime
+#     runtime: docker.io/lithopscloud/ibmcf-python-v312
+
+    # https://github.com/lithops-cloud/lithops/blob/master/docs/source/compute_config/localhost.md 
+    # https://lithops-cloud.github.io/docs/source/cli.html#lithops-runtime-build-runtime-name
+    # worker_processes: 4 # CPU_COUNT
+    # version: 2
+
+ 
+    
+minio:
+    # storage_bucket: lithops-test
+    storage_bucket: test-bucket
+    endpoint: http://192.168.1.168:9000 # dentro de docker s3 / minio: self deployed accesible desde ambos entornos : 172.17.0.1 --> r
+    access_key_id: minioadmin
+    secret_access_key: minioadmin
+    
+#redis:
+    #host: <ENDPOINT_URL>
+    #port: <ACCESS_KEY>
+    #password: <ACCESS_KEY>
+
+#rabbitmq:
+    #amqp_url   : <RABBIT_AMQP_URL>  # amqp://

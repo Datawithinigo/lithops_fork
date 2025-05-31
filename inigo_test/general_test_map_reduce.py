@@ -22,7 +22,7 @@ from standarized_measurement_functions import sleep_function, prime_function
 
 # iterdata = [1, 2, 3, 4, 5]
 
-iterdata = [4]
+iterdata = [2]
 
 
 # def my_reduce_function(results):
@@ -37,6 +37,10 @@ def print_stats(future):
     print(f"CPU Usage Average: {future.stats.get('worker_func_avg_cpu_usage', 'N/A')}")  # busqueda de que libreria usa : psutils --> percentaje uso cpu 
     print(f"Energy Consumption: {future.stats.get('worker_func_energy_consumption', 'N/A')}")
     
+    # Method used: 
+    print(f"Energy Method used: {future.stats.get('worker_func_energy_method_used', 'N/A')}")
+
+
     # PERF: added new
     pkg = future.stats.get('worker_func_perf_energy_pkg')
     cores = future.stats.get('worker_func_perf_energy_cores')

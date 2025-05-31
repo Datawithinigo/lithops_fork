@@ -43,7 +43,7 @@ from lithops.constants import JOBS_PREFIX, LITHOPS_TEMP_DIR, MODULES_DIR
 from lithops.utils import setup_lithops_logger, is_unix_system
 from lithops.worker.status import create_call_status
 from lithops.worker.utils import SystemMonitor
-from lithops.worker.energy_manager import EnergyManager
+from lithops.worker.energymanager import EnergyManager
 from lithops.worker.processor_info import add_processor_info_to_task
 
 pickling_support.install()
@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 
 # Flag to control whether to run both energy monitors at once
 # Set to True to run both eBPF and regular energy monitors simultaneously
-RUN_BOTH_ENERGY_MONITORS = True
+RUN_BOTH_ENERGY_MONITORS = False
 
 
 class ShutdownSentinel:
@@ -220,12 +220,8 @@ def run_task(task):
         sys_monitor = SystemMonitor(process_id)
         
         ##~~ENERGY~~##
-        # Initialize energy manager with configuration
-        energy_config = {
-            'energy': True,
-            'energy_strategy': 'auto' if not RUN_BOTH_ENERGY_MONITORS else ['ebpf', 'perf']
-        }
-        energy_manager = EnergyManager(process_id, energy_config)
+        # Initialize energy manager
+        energy_manager = EnergyManager(process_id, RUN_BOTH_ENERGY_MONITORS)
         
         # Read function name from stats file if it exists
         energy_manager.read_function_name_from_stats(task.stats_file)

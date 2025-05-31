@@ -684,6 +684,7 @@ pip install -e ../lithops_fork/
 
 2) set the configuration to this file: 
 export LITHOPS_CONFIG_FILE=/home/bigrobbin/Desktop/TFG/flexecutor-main/config_template.yaml   
+export LITHOPS_CONFIG_FILE=/home/users/iarriazu/flexecutor-main/lithops_config
 
 3) minio storage / runtime selected and iniciated
 docker start minio
@@ -1423,8 +1424,14 @@ kubectl delete events --all --namespace lithops-jobs
 POD_NAME=$(kubectl get pods --namespace lithops-jobs --sort-by='.metadata.creationTimestamp' -o jsonpath='{.items[-1:].metadata.name}') && echo "Intentando obtener logs para el pod más reciente: $POD_NAME" && kubectl logs --namespace lithops-jobs $POD_NAME
 
 
-
+# congigure other execution space
  
+# Check which namespace actually has pods
+kubectl get pods --all-namespaces | grep lithops
+
+# Use your configured namespace
+POD_NAME=$(kubectl get pods --namespace inigo-jobs-energy --sort-by='.metadata.creationTimestamp' -o jsonpath='{.items[-1:].metadata.name}') && echo "Getting logs for most recent pod: $POD_NAME" && kubectl logs --namespace inigo-jobs-energy $POD_NAME
+
 
 ## elemenst
 mc alias set myminio http://192.168.5.24:9000 lab144 astl1a4b4
@@ -1434,9 +1441,7 @@ mc ls myminio
 
 
  
-
-# conect to the server: 
-ssh -L 21000:192.168.2.2:6443 iarriazu@cloudfunctions.urv.cat -N
+ 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # TRABAJO CLUSTER: 
@@ -1457,6 +1462,7 @@ export LITHOPS_CONFIG_FILE=/home/users/iarriazu/lithops/lithops_config
 
 export LITHOPS_CONFIG_FILE=/home/users/iarriazu/lithops_fork/lithops_config
 export LITHOPS_CONFIG_FILE=/home/users/iarriazu/lithops/lithops_config
+export LITHOPS_CONFIG_FILE=/home/users/iarriazu/flexecutor-main/lithops_config
 
 
 cd ~/lithops
@@ -1479,6 +1485,7 @@ docker start minio
 # ANTES DE EJECUTAR: 
 1) crear namespace: 
 kubectl create namespace inigo-jobs-energy
+kubectl create namespace inigo-jobs-flexecutor
 
 2) docker login
 
@@ -1488,6 +1495,11 @@ kubectl create namespace inigo-jobs-energy
 lithops runtime build -b k8s iarriazu/inigo_runtime
 
 docker push iarriazu/inigo_runtime
+  ### Build mean 
+  cd /home/users/iarriazu/
+  docker build -f flexecutor-main/Dockerfile -t flexecutor-app .
+
+kubectl get nodes
 
 4) kubectl get nodes --show-labels
 5) kubectl auth can-i create pods --namespace=default 
@@ -1588,6 +1600,155 @@ Apuntar la config de lithops al cluster
 
 
 kubectl get events -n inigo-jobs-energy --sort-by='.metadata.creationTimestamp'
+
+
+
+
+
+
+
+# List all pods in your namespace
+kubectl get pods -n inigo-jobs-energy
+
+# Get detailed pod information
+kubectl describe pods -n inigo-jobs-energy
+
+# Get pod logs
+kubectl logs <pod-name> -n inigo-jobs-energy
+
+# Get pod status in YAML format
+kubectl get pods -n inigo-jobs-energy -o yaml
+
+# Watch pods in real-time
+kubectl get pods -n inigo-jobs-energy -w
+
+
+# Tras la ejecucion: 
+
+tras la ejecucion de /home/users/iarriazu/lithops_fork/inigo_test/main_german.py deberia haber una carpeta de energia generada por lithops, si la ejecucion es en k8s no aparece, cual es la razon ? que puedo hacer para solucionarlo?
+Ahora entiendo el problema. Basándome en el análisis del código y los logs, puedo explicarte qué está pasando y cómo solucionarlo:
+
+
+## **Razón del problema:**
+
+La carpeta de energía no se genera en Kubernetes porque:
+
+1. **Falta de herramientas necesarias en el contenedor**: Los logs muestran que tanto `sudo` como `perf` no están disponibles en el runtime de Kubernetes:
+   ```
+   Error with sudo perf list: [Errno 2] No such file or directory: 'sudo'
+   Error getting available energy events: [Errno 2] No such file or directory: 'perf'
+   Error starting energy monitoring: [Errno 2] No such file or directory: 'sudo'
+   ```
+
+2. **Falta de BCC (BPF Compiler Collection)**: El monitor eBPF tampoco puede funcionar:
+   ```
+   BCC (BPF Compiler Collection) is not installed.
+   Please install it with: sudo apt-get install bpfcc-tools python3-bpfcc
+   ```
+
+3. **Permisos insuficientes**: Incluso si las herramientas estuvieran disponibles, los contenedores de Kubernetes normalmente no tienen permisos para acceder a contadores de hardware de bajo nivel.
+
+## **Soluciones:**
+
+### **Solución 1: Modificar el runtime de Docker**
+
+Necesitas actualizar tu imagen Docker `iarriazu/inigo_runtime` para incluir las herramientas necesarias:
+
+
+
+
+
+
+
+# cluster solucion claude: 
+https://claude.ai/share/fada8ad6-dd06-48ea-a1d8-42c63a920d31
+
+
+
+
+glujo de la tabla 
+
+
+
+
+
+
+
+
+
+Estoy en un entorno compartido, donde uso docker y no tengo permisos de super usuario
+
+por un error de espacio tuve que eliminar algunos volumenes y ahora no puede jeecutar nada correctamente, no funciona bien el build.
+
+comando que ejectute hace itempo y alguno extra 
+pip cache purge
+
+Comandos que no funcionan
+sudo pkill -9 -f docker
+docker system prune -f && docker builder prune -f
+pkill -f "docker build"
+
+cuando ejecuto un build nunca termina: 
+
+(.venv) iarriazu@proxy1:~/lithops_fork$ lithops runtime build -b k8s iarriazu/inigo_runtime
+2025-05-31 17:04:19,857 [INFO] config.py:139 -- Lithops v3.6.1.dev0 - Python3.10
+2025-05-31 17:04:19,858 [DEBUG] config.py:101 -- Loading configuration from /home/users/iarriazu/.lithops/config
+2025-05-31 17:04:19,885 [DEBUG] config.py:179 -- Loading Serverless backend module: k8s
+2025-05-31 17:04:20,273 [DEBUG] k8s.py:51 -- Creating Kubernetes client
+2025-05-31 17:04:20,273 [DEBUG] k8s.py:67 -- Loading kubeconfig file: /home/users/iarriazu/.kube/config
+2025-05-31 17:04:20,303 [DEBUG] k8s.py:78 -- Using kubeconfig conetxt: kubernetes-admin@kubernetes - cluster: kubernetes
+2025-05-31 17:04:20,304 [INFO] k8s.py:112 -- Kubernetes client created - Namespace: lithops-jobs
+2025-05-31 17:04:20,305 [INFO] k8s.py:132 -- Building runtime docker.io/iarriazu/inigo_runtime from Dockerfile
+2025-05-31 17:04:20,305 [DEBUG] utils.py:234 -- Creating function handler zip in /home/users/iarriazu/lithops_fork/lithops_k8s.zip
+[+] Building 21.5s (0/2)                                                         docker:default
+ => [internal] load .dockerignore                                                         21.5s
+ => [internal] load build definition from Dockerfile                                      21.5s
+
+ 
+
+ME gustaria saber como hacer qeu este elemento complile y funcione correctamente  
+
+lithops runtime build -b k8s iarriazu/
+
+
+# ERROR
+ERROR: Could not install packages due to an OSError: [Errno 28] No space left on device
+(venv) iarriazu@proxy1:~/flexecutor-main$ pip cache purge
+
+
+
+ver cuanto necesitas: 
+(venv) iarriazu@proxy1:~$ du -sh .
+18G     .
+
+(venv) iarriazu@proxy1:~$ du -sh * .[^.]* | sort -rh | head -n 20
+13G     flexecutor-main
+1.6G    .cache
+1.3G    lithops_fork
+1.2G    lithops
+875M    .vscode-server
+225M    .local
+11M     .kube
+744K    move
+556K    manual-de-primera-conexion-rack-v1.1 (1).pdf
+412K    .docker
+208K    .dotnet
+112K    .ssh
+104K    energy_data
+100K    .lithops
+36K     .mc
+36K     .bash_history
+12K     Cline
+8.0K    lithops-custom-runtime
+8.0K    .config
+4.0K    label_nodes.sh
+
+
+
+
+
+
+
 
 
 

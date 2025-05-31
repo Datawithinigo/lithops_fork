@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lithops-debug-pod
+  namespace: inigo-jobs-energy
+spec:
+  # Usamos el mismo nodeSelector para asegurar que se despliega en los nodos correctos
+  nodeSelector:
+    lithops-enabled: "true"
+  containers:
+  - name: lithops-runtime-container
+    # IMPORTANTE: Usa el nombre exacto de tu imagen de runtime aquí
+    image: iarriazu/inigo_runtime
+    # Este comando mantiene el pod vivo para que podamos inspeccionarlo
+    command: ["/bin/sh", "-c"]
+    args: ["tail -f /dev/null"]
+  # Reiniciar nunca para que podamos ver el error si falla
+  restartPolicy: Never
